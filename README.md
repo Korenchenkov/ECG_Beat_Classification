@@ -57,13 +57,13 @@ Load all records listed in the RECORDS variable.
 
 Read the ECG signal (first channel) and convert ADC units to millivolts.
 
-Load R?peak positions and annotation symbols.
+Load R-peak positions and annotation symbols.
 
-Apply band?pass filter (0.5?40 Hz) and notch filter (50 Hz) to remove baseline wander and powerline noise.
+Apply band-pass filter (0.5-40 Hz) and notch filter (50 Hz) to remove baseline wander and powerline noise.
 
-Z?normalize the signal.
+Z-normalize the signal.
 
-Segment heartbeats using a window of [R?100, R+150] samples (250 samples total, 360?Hz ? ~694?ms).
+Segment heartbeats using a window of [R-100, R+150] samples (250 samples total, 360Hz - ~694ms).
 
 Map the original annotation symbols to one of the 5 AAMI classes:
 
@@ -75,7 +75,7 @@ V - Ventricular ectopic beat
 
 F - Fusion beat
 
-Q - Unknown / non?beats
+Q - Unknown / non-beats
 
 Concatenate all beats, labels, and patient IDs.
 
@@ -102,6 +102,6 @@ X, y, pids = data['X'], data['y'], data['pids']
 
 The original PhysioNet .dat/.hea/.atr files can be converted using the wfdb library or other tools.
 
-The filtering parameters (cutoff frequencies, notch filter) are tuned for the MIT-BIH sampling rate (360?Hz).
+The filtering parameters (cutoff frequencies, notch filter) are tuned for the MIT-BIH sampling rate (360Hz).
 
 The AAMI mapping follows the standard recommendation for arrhythmia classification.
