@@ -97,17 +97,11 @@ import numpy as np
 data = np.load('mitbih_preprocessed.npz')
 X, y, pids = data['X'], data['y'], data['pids']
 
-# Customization
-Change the records list ? Edit the RECORDS variable in the notebook.
-
-Adjust window size ? Modify WINDOW_BEFORE and WINDOW_AFTER.
-
-Use the second channel ? Set channel=1 in load_record().
 
 # Notes
-The notebook assumes the MIT?BIH files have been pre?converted to CSV and TXT format.
+
 The original PhysioNet .dat/.hea/.atr files can be converted using the wfdb library or other tools.
 
-The filtering parameters (cutoff frequencies, notch filter) are tuned for the MIT?BIH sampling rate (360?Hz).
+The filtering parameters (cutoff frequencies, notch filter) are tuned for the MIT-BIH sampling rate (360?Hz).
 
 The AAMI mapping follows the standard recommendation for arrhythmia classification.
