@@ -78,7 +78,7 @@ pip install numpy pandas scipy matplotlib seaborn tqdm scikit-learn imbalanced-l
 
 ## - Подготовка данных
 
-1. Скачайте MIT-BIH Arrhythmia Database (CSV-версию) с [PhysioNet](https://physionet.org/content/mitdb/1.0.0/) или сконвертируйте оригинальные `.dat/.hea/.atr` с помощью `wfdb`.
+1. Скачайте MIT-BIH Arrhythmia Database (CSV-версию) с [Kaggle](https://www.kaggle.com/datasets/taejoongyoon/mitbit-arrhythmia-database) или сконвертируйте оригинальные `.dat/.hea/.atr` с помощью `wfdb`.
 2. Поместите файлы в каталог `mitbih_database/`.
 3. Для каждой записи (например, `100`) должны быть:
    - `100.csv` - сигнал (колонки: `sample #`, `MLII`, `V5`)
