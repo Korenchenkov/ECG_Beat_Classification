@@ -1,18 +1,19 @@
 # ECG Beat Classification - MIT-BIH (AAMI 5 классов)
 
-End-to-end проект по классификации сердечных сокращений на ЭКГ из базы **MIT-BIH Arrhythmia Database** в 5 классов по стандарту **AAMI** (N, S, V, F, Q).
+End-to-end пайплайн для классификации сердечных сокращений на сигналах ЭКГ из **MIT-BIH Arrhythmia Database** по стандартным классам **AAMI** (N, S, V, F, Q).
 
-Проект включает три этапа, реализованных в виде Jupyter-ноутбуков:
+Проект состоит из трёх последовательных Jupyter-ноутбуков и одного итогового:
 
-1. **Предобработка сигнала** - фильтрация, нормализация и сегментация ЭКГ вокруг R-пиков.
-2. **Устранение дисбаланса классов** - SMOTE, аугментации сигнала, взвешенный loss / sampler.
-3. **Обучение 1D-CNN с residual-блоками** - обучение, валидация, оценка на тесте и сохранение модели.
+1. **Предобработка сигналов** ? фильтрация, нормализация и сегментация вокруг R-пиков.
+2. **Устранение дисбаланса классов** ? SMOTE, аугментация сигнала, взвешенный loss / sampler.
+3. **Обучение 1D-CNN с residual-блоками** ? обучение, оценка, метрики на тесте и сохранение модели.
+4. **Финальный ноутбук** ? обучение и **инференс модели для пользователя** (проверка на своих данных через тестовую ячейку).
 
-В итоге обучается нейросеть (`ECGResNet`), способная классифицировать отдельные удары сердца.
+> **Примечание по классам:** фактический набор классов берётся из файла данных (`class_names`). В текущем `mitbih_balanced.npz` используются **4 класса** (`N, S, V, F`) ? класс `Q` отсутствует в сбалансированном наборе.
 
 ---
 
-##  Классы AAMI
+## Классы AAMI
 
 | Код | Название | Описание |
 |-----|----------|----------|
@@ -20,7 +21,6 @@ End-to-end проект по классификации сердечных сокращений на ЭКГ из базы **MIT-BIH
 | **S** | Supraventricular ectopic | Наджелудочковые экстрасистолы |
 | **V** | Ventricular ectopic | Желудочковые экстрасистолы |
 | **F** | Fusion | Сливные комплексы |
-| **Q** | Unknown | Артефакты / неизвестные |
 
 ---
 
@@ -40,6 +40,7 @@ ECG/
 ├── main.ipynb                    # Шаг 1: предобработка и сегментация
 ├── EliminatingClassImbalances.ipynb  # Шаг 2: борьба с дисбалансом
 ├── BuildingModel.ipynb           # Шаг 3: обучение 1D ResNet
+├── Model.ipynb                   # Финальная модель
 ├── best_ecg_model.pth            # Лучший чекпойнт (по val macro-F1)
 ├── ecg_model_final.pth           # Финальная модель + метаданные и история
 ├── requirements.txt              # Python-зависимости
@@ -152,33 +153,49 @@ pip install numpy pandas scipy matplotlib seaborn tqdm scikit-learn imbalanced-l
 - `ecg_model_final.pth` - финальная модель с метаданными (`model_config`, `class_names`, `strategy`, `test_metrics`, `history`).
 
 ---
+### Шаг 4 ? Итоговый ноутбук: Model.ipynb
+Рефакторинг BuildingModel.ipynb под требования:
 
+весь код разбит на чистые функции (load_data ? clean_data ? preprocess_data ? create_loaders ? get_model ? train_model ? plot_history ? test_model ? save_final_model);
+главная функция обучения run_training_pipeline();
+главная функция для пользователя main_test() ? в последней ячейке;
+финальная модель сохраняет rr_mean/rr_std/rr_clip для согласованного инференса.
+
+### Проверка модели на своих данных (для пользователя)
+Поместите рядом с Model.ipynb файлы mitbih_balanced.npz (для обучения) и ecg_model_final.pth (для инференса). Затем:
+
+Выполните все ячейки (Runtime ? Run all или Ctrl+F9).
+В последней ячейке запустится main_test():
+введите путь к вашему файлу (в Google Colab можно нажать Enter и выбрать файл через диалог загрузки);
+ноутбук выполнит предобработку, предсказание и выведет понятный текстовый результат с уверенностью модели и графиком сигнала.
 ## - Использование обученной модели
 
 ```python
 import numpy as np
 import torch
 
-# 1. Загрузить чекпойнт
+# 1. Загрузка чекпоинта
 ckpt = torch.load('ecg_model_final.pth', map_location='cpu', weights_only=False)
-print(ckpt['test_metrics'])      # accuracy, macro_f1, loss
-print(ckpt['class_names'])       # ['N', 'S', 'V', 'F', 'Q']
+print(ckpt['test_metrics'])   # accuracy, macro_f1, loss
+print(ckpt['class_names'])    # например ['N', 'S', 'V', 'F']
 
-# 2. Создать модель той же архитектуры (определена в BuildingModel.ipynb)
-#    и подгрузить веса:
+# 2. Создание модели по конфигу (класс ECGResNet ? из Model.ipynb)
+# from model import ECGResNet
 # model = ECGResNet(**ckpt['model_config'])
 # model.load_state_dict(ckpt['model_state_dict'])
 # model.eval()
 
-# 3. Подать сегмент ЭКГ: shape (1, 1, 250), float32, z-нормализованный
+# 3. Предсказание для одного сигнала: shape (1, 1, 250), float32
 # beat = torch.from_numpy(X[0:1]).float().unsqueeze(1)
+# rr   = torch.from_numpy(rr_vec[0:1]).float()          # shape (1, 6)
 # with torch.no_grad():
-#     logits = model(beat)
+#     logits = model(beat, rr)
 #     pred = logits.argmax(dim=1).item()
 # print(ckpt['class_names'][pred])
+
 ```
 
-Загрузка предобработанных данных:
+Доступ к сегментированным данным:
 ```python
 import numpy as np
 data = np.load('models/mitbih_preprocessed.npz')
