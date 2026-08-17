@@ -35,17 +35,12 @@ ECG/
 ├── models/                           # Промежуточные .npz файлы (создаются ноутбуками)
 │   ├── mitbih_preprocessed.npz       # Шаг 1: сегменты beats + RR-признаки
 │   └── mitbih_balanced.npz           # Шаг 2: сплиты + варианты балансировки
-├── notebooks/                        # Копии ноутбуков (Model.ipynb - с выводами)
-├── src/
-│   └── main.py                       # Вся логика предобработки (используется в main.ipynb)
 ├── main.ipynb                        # Шаг 1: предобработка и сегментация
 ├── EliminatingClassImbalances.ipynb  # Шаг 2: борьба с дисбалансом
 ├── BuildingModel.ipynb               # Шаг 3: обучение 1D ResNet
 ├── Model.ipynb                       # Шаг 4: финальный пайплайн + инференс
 ├── make_my_ecg.py                    # Генерация my_ecg.npz для проверки модели
 ├── my_ecg.npz                        # Пример файла для main_test() (X, rr, y_true)
-├── generate_report.py                # Генерация Word-отчёта (нужен python-docx)
-├── Отчёт_ЭКГ_классификация.docx      # Готовый отчёт по проекту
 ├── best_ecg_model.pth                # Лучший чекпойнт последнего запуска (val macro-F1)
 ├── best_ecg_model_aug.pth            # Лучшие чекпойнты по каждой из 3 стратегий
 ├── best_ecg_model_smote.pth
@@ -104,7 +99,7 @@ pip install numpy pandas scipy matplotlib seaborn tqdm scikit-learn imbalanced-l
 Запускайте ноутбуки **строго по порядку** - каждый следующий читает результат предыдущего.
 
 ### Шаг 1 - Предобработка: `main.ipynb`
-Делает то же, что и `src/main.py`:
+
 - Загружает каждую запись MIT-BIH, переводит ADC в мВ.
 - Применяет **band-pass 0.5-40 Гц** (Butterworth, order=4) и **notch 50 Гц** для подавления дрейфа и сетевой наводки.
 - Выполняет **Z-score нормализацию**.
@@ -237,14 +232,6 @@ X, y, rr, pids = data['X'], data['y'], data['X_rr'], data['pids']
 
 ---
 
-## - Отчёт по проекту
-
-Скрипт `generate_report.py` генерирует Word-документ `Отчёт_ЭКГ_классификация.docx` (постановка задачи, данные, методы, результаты, план дальнейшей работы). Требует `python-docx`:
-
-```bash
-pip install python-docx
-python generate_report.py
-```
 
 ---
 
